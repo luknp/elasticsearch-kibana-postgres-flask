@@ -1,0 +1,77 @@
+version: "3.8"
+
+services:
+  api-service:
+    build: ./flask_api/
+    volumes:
+      - ./flask_api/:/usr/src/app/
+    ports:
+      - 5000:5000
+    environment:
+      PORT: 5000
+      FLASK_DEBUG: 1
+
+  postgres:
+    image: debezium/postgres:13-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=user1
+      - POSTGRES_PASSWORD=1q2w3e
+      - POSTGRES_DB=db_test
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - net1
+
+  panel:
+    image: adminer
+    networks:
+      - net1
+    ports:
+      - 8080:8080
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms750m -Xmx750m"
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+      - "http.host=0.0.0.0"
+      - "transport.host=127.0.0.1"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - net1
+    mem_limit: 1g
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.11.1
+    environment:
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=$ELASTIC_PASSWORD
+      - ELASTICSEARCH_HOSTS="http://elasticsearch:9200"
+
+    ports:
+      - 5601:5601
+    volumes:
+      - kibana_data:/usr/share/kibana/data
+    networks:
+      - net1
+    depends_on: ["elasticsearch"]
+
+volumes:
+  pg_data:
+    driver: local
+  es_data:
+    driver: local
+  kibana_data:
+    driver: local
+
+networks:
+  net1:
+    driver: bridge
