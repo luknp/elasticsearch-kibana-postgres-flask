@@ -19,9 +19,9 @@ services:
     ports:
       - "5433:5432"
     environment:
-      - POSTGRES_USER=user1
-      - POSTGRES_PASSWORD=1q2w3e
-      - POSTGRES_DB=db_test
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - POSTGRES_DB=$POSTGRES_DB
     volumes:
       - pg_data:/var/lib/postgresql/data
     networks:
@@ -35,7 +35,7 @@ services:
       - 8080:8080
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELK_VERSION}
     environment:
       - bootstrap.memory_lock=true
       - discovery.type=single-node
@@ -53,9 +53,9 @@ services:
     mem_limit: 1g
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.11.1
+    image: docker.elastic.co/kibana/kibana:${ELK_VERSION}
     environment:
-      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_USERNAME=$ELASTICSEARCH_USERNAME
       - ELASTICSEARCH_PASSWORD=$ELASTIC_PASSWORD
       - ELASTICSEARCH_HOSTS="http://elasticsearch:9200"
 
@@ -65,8 +65,8 @@ services:
       - kibana_data:/usr/share/kibana/data
     networks:
       - net1
-    depends_on: ["elasticsearch"]
-
+    depends_on:
+      - elasticsearch
 volumes:
   pg_data:
     driver: local
