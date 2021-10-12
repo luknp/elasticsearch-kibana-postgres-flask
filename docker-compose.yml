@@ -2,9 +2,9 @@ version: "3.8"
 
 services:
   api-service:
-    build: ./flask_api/
+    build: ./api/
     volumes:
-      - ./flask_api/:/usr/src/app/
+      - ./api/:/usr/src/app/
     ports:
       - 5000:5000
     environment:
